@@ -50,6 +50,7 @@ class SimpleSWTestCase(unittest.TestCase):
         # self.connector.close()
 
 
+
 class Tests(SimpleSWTestCase):
 
     spinner_left_test = [
