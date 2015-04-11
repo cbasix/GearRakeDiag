@@ -59,49 +59,156 @@ config = {
             "name": "IN_MULTI_LEFT",
             "pin": -1,
         },
-
         {
-            "id": 19,
-            "name": "IN_MOD_OU_FRAME",
-            "pin": 7,
+            "id": 12,
+            "name": "IN_AUTO_TRANSPORT",
+            "pin": -1,
         },
-        {
-            "id": 18,
-            "name": "IN_MOD_OU_SPINNER_BACK",
-            "pin": 5,
-        },
-
         {
             "id": 13,
             "name": "IN_AUTO_LOW",
-            "pin": 3,
+            "pin": -1,
         },
         {
             "id": 14,
             "name": "IN_AUTO_WORK",
-            "pin": 4,
+            "pin": -1,
+        },
+        {
+            "id": 15,
+            "name": "IN_MOD_LR_STEER",
+            "pin": -1,
+        },
+        {
+            "id": 16,
+            "name": "IN_MOD_LR_WEEL_RIGHT_TELE",
+            "pin": -1,
+        },
+        {
+            "id": 17,
+            "name": "IN_MOD_LR_WEEL_LEFT_TELE",
+            "pin": -1,
+        },
+        {
+            "id": 18,
+            "name": "IN_MOD_OU_SPINNER_BACK",
+            "pin": -1,
+        },
+        {
+            "id": 19,
+            "name": "IN_MOD_OU_FRAME",
+            "pin": -1,
+        },
+        {
+            "id": 18,
+            "name": "IN_MOD_OU_SPINNER_BACK",
+            "pin": -1,
+        },
+        {
+            "id": 19,
+            "name": "IN_MOD_OU_FRAME",
+            "pin": -1,
         },
         {
             "id": 20,
             "name": "SENS_SPINNER_LEFT_THIRD",
-            "pin": 0,
+            "pin": -1,
         },
         {
             "id": 21,
             "name": "SENS_SPINNER_RIGHT_THIRD",
-            "pin": 0,
+            "pin": -1,
         },
         {
             "id": 22,
             "name": "SENS_SPINNER_LEFT_UP",
-            "pin": 0,
+            "pin": -1,
         },
         {
             "id": 23,
             "name": "SENS_SPINNER_RIGHT_UP",
             "pin": 0,
         },
-
+        {
+            "id": 24,
+            "name": "SENS_SPINNER_REAR_UP",
+            "pin": 0,
+        },
+        {
+            "id": 25,
+            "name": "SENS_SPINNER_LEFT_TELE_OUT",
+            "pin": 0,
+        },
+        {
+            "id": 26,
+            "name": "SENS_SPINNER_LEFT_TELE_IN",
+            "pin": 0,
+        },
+        {
+            "id": 27,
+            "name": "SENS_SPINNER_RIGHT_TELE_OUT",
+            "pin": 0,
+        },
+        {
+            "id": 28,
+            "name": "SENS_SPINNER_RIGHT_TELE_IN",
+            "pin": 0,
+        },
+        {
+            "id": 29,
+            "name": "SENS_FRAME_UP",
+            "pin": 0,
+        },
+        {
+            "id": 30,
+            "name": "SENS_FRAME_MIDDLE",
+            "pin": 0,
+        },
+        {
+            "id": 31,
+            "name": "SENS_FRAME_LOW",
+            "pin": 0,
+        },
+        {
+            "id": 32,
+            "name": "SENS_FRAME_GROUND",
+            "pin": 0,
+        },
+        {
+            "id": 33,
+            "name": "SENS_FRAME_LOCK_OPEN",
+            "pin": 0,
+        },
+        {
+            "id": 34,
+            "name": "SENS_FRAME_LOCK_CLOSED",
+            "pin": 0,
+        },
+        {
+            "id": 35,
+            "name": "SENS_WEEL_TELE_RIGHT_OUT",
+            "pin": 0,
+        },
+        {
+            "id": 36,
+            "name": "SENS_WEEL_TELE_RIGHT_IN",
+            "pin": 0,
+        },
+        {
+            "id": 37,
+            "name": "SENS_WEEL_TELE_LEFT_OUT",
+            "pin": 0,
+        },
+        {
+            "id": 38,
+            "name": "SENS_WEEL_TELE_LEFT_IN",
+            "pin": 0,
+        },
+        {
+            "id": 39,
+            "name": "SENS_WEEL_TRACK_MIDDLE",
+            "pin": 0,
+        },
     ],
     "output": [
         {
@@ -271,7 +378,7 @@ config = {
         }, {
             "id": 33,
             "name": "LED_MOD_OU_FRAME",
-            "pin": 20
+            "pin": -1
         },
 
     ],
@@ -295,8 +402,8 @@ config = {
     ],
     "message": [
         {
-            "id": 4,
-            "name": ""
+            "id": 12110,
+            "name": "MSG_TSKPART_FRAME_DOWN"
         }
     ],
     "type": [
@@ -361,6 +468,21 @@ def get_input_id(input_name):
         if input_name == input_["name"]:
             return input_["id"]
     raise Exception(" NO ID FOR INPUT NAME: "+str(input_name)+" FOUND")
+
+
+def get_message_name(message_id):
+    for message_ in config["message"]:
+        if message_id == message_["id"]:
+            return message_["name"]
+
+    raise Exception(" NO NAME FOR MESSAGE ID: "+str(message_id)+" FOUND")
+
+def get_message_id(message_name):
+    for message_ in config["message"]:
+        if message_name == message_["name"]:
+            return message_["id"]
+    raise Exception(" NO ID FOR MESSAGE NAME: "+str(message_name)+" FOUND")
+
 
 def get_output_name(output_id):
     for output_ in config["output"]:

@@ -11,7 +11,7 @@ if __name__ == "__main__":
         try:
             ser = serial.Serial(
                 port='/dev/ttyACM'+str(i),
-                baudrate=115200, # 9600,
+                baudrate=9600,#115200, # 9600,
                 #parity=serial.PARITY_ODD,
                 #stopbits=serial.STOPBITS_TWO,
                 #bytesize=serial.SEVENBITS

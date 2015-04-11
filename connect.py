@@ -2,13 +2,14 @@ import time
 import serial
 import struct
 
-DIAG_ERROR = 0
+DIAG_ERROR = 1
 
 DIAG_GET_SETTING = 10
 DIAG_SET_SETTING = 11
 DIAG_GET_ALL_SETTINGS = 12
 
 DIAG_SIMULATE_INPUT = 21
+DIAG_SIMULATE_MSG = 22
 
 DIAG_GET_ALL_ERRORS = 32
 DIAG_CLEAR_ALL_ERRORS = 34
@@ -25,6 +26,7 @@ DIAG_SIMULATE_INPUT_MODE = 71
 DIAG_SIMULATE_OUTPUT_MODE = 72
 
 TYPE_MANUAL = 2
+TYPE_MESSAGE = 3
 
 
 class Connector:
@@ -118,6 +120,9 @@ class Connector:
     def simulate_manual_input(self, input_id, value):
         self.send_frame(DIAG_SIMULATE_INPUT, TYPE_MANUAL, input_id, value, 0)
 
+    def simulate_message(self, input_id, value):
+        self.send_frame(DIAG_SIMULATE_MSG, TYPE_MESSAGE, input_id, value, 0)
+
     def request_all_input_values(self):
         self.send_frame(DIAG_GET_ALL_IN_VALUES, 0, 0, 0, 0)
 
@@ -146,7 +151,7 @@ class Connector:
         self.ser.write(frame)
         self.ser.flush()
         time.sleep(0.15)
-        print("Ausgang: "+str(frame))
+        # print("Ausgang: "+str(frame))
 
     def close(self):
         self.ser.close()
@@ -154,7 +159,7 @@ class Connector:
     def read_frames(self):
         while self.ser.inWaiting() >= 10:
             out = self.ser.read(10)
-            print("Eingang: "+str(out))
+            # print("Eingang: "+str(out))
             frame = struct.unpack("!hhhhh", out)
             command = frame[0]
             arg1 = frame[1]
