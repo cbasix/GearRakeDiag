@@ -52,6 +52,31 @@ class SimpleSWTestCase(unittest.TestCase):
 
 
 class Tests(SimpleSWTestCase):
+    framelock_init = [
+        ["SEND", "SENS_FRAME_LOCK_CLOSED", 1],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 0],
+    ]
+    open_framelock = [
+        ["RECEIVE", "OUT_FRAME_UP", 1],
+
+        ["RECEIVE", "OUT_FRAME_UP", 0],
+
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 1],
+        ["SEND", "SENS_FRAME_LOCK_CLOSED", 0],
+        ["RECEIVE", "LED_FRAME_LOCK", 1],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 1],
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 0],
+    ]
+    close_framelock = [
+
+        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 1],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 0],
+        ["SEND", "SENS_FRAME_LOCK_CLOSED", 1],
+
+        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 0],
+        ["RECEIVE", "LED_FRAME_LOCK", 0],
+    ]
+
 
     spinner_left_test = [
         ["SEND", "IN_SPINNER_LEFT_UP", 1],
@@ -131,7 +156,7 @@ class Tests(SimpleSWTestCase):
     def test_spinner_both_up(self):
         # run normal test
         print("\nSTART TEST test_spinner_both_up")
-        self.start(self.spinner_both_up, 0, 10)
+        self.start(self.spinner_both_up, 3, 10)
 
     def test_spinner_both_up_top(self):
         #change test top sensors instead of third
@@ -165,13 +190,18 @@ class Tests(SimpleSWTestCase):
         ["SENDMSG", "MSG_TSKPART_FRAME_DOWN", 0],
         ["RECEIVE", "OUT_FRAME_DOWN", 0],
 
-
         # framelock close
         ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 1],
         ["SEND", "SENS_FRAME_LOCK_OPEN", 0],
         ["SEND", "SENS_FRAME_LOCK_CLOSED", 1],
         ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 0],
+
+
+
         ["RECEIVE", "OUT_PRESSURE", 0],
+
+
+
 
     ]
 
@@ -200,7 +230,7 @@ class Tests(SimpleSWTestCase):
     auto_work_start = [
         ["SEND", "IN_AUTO_WORK", 1],
         ["WAIT", "", 6],
-        ["SEND", "IN_AUTO_WORK", 0],
+        # ["SEND", "IN_AUTO_WORK", 0],
 
         ["RECEIVE", "LED_AUTO_WORK", 1],
 
@@ -250,10 +280,11 @@ class Tests(SimpleSWTestCase):
         ["SEND", "SENS_FRAME_UP", 0],
         ["RECEIVE", "OUT_FRAME_UP", 0],
 
+        ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 1],
+        ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 1],
+        ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 0],
         ["RECEIVE", "OUT_SPINNER_REAR_UP", 1],
         ["RECEIVE", "OUT_SPINNER_REAR_UP", 0],
-        ["RECEIVE", "OUT_SPINNER_REAR_DOWN", 1],
-        ["RECEIVE", "OUT_SPINNER_REAR_DOWN", 0],
     ]
     
     auto_work_init_l1 = [
@@ -351,8 +382,6 @@ class Tests(SimpleSWTestCase):
     auto_work_end = [
         # END
         ["RECEIVE", "LED_AUTO_WORK", 0],
-        # Really? Why?
-        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 0],
     ]
 
     def test_x_auto_1(self):
@@ -360,13 +389,13 @@ class Tests(SimpleSWTestCase):
         local_test = self.auto_work_init_v1[:]
         local_test = self.combine_append(local_test, self.auto_work_init_l1)
         local_test = self.combine_append(local_test, self.auto_work_init_r1)
-        local_test = self.combine_append(local_test, self.auto_work_up_v234)
         local_test = self.combine_append(local_test, self.auto_work_start)
+        local_test = self.combine_append(local_test, self.auto_work_up_v234)
         local_test = self.combine_append(local_test, self.auto_work_end)
         
         print("\nSTART TEST auto work 1")
         print(str(local_test))
-        self.start(local_test, 3, 5, True)
+        self.start(local_test, 3, 10, True)
 
     def test_x_auto_2(self):
         # build test array  version (v2 l1 r1)
@@ -381,10 +410,10 @@ class Tests(SimpleSWTestCase):
 
         print("\nSTART TEST auto work 2")
         print(str(local_test))
-        self.start(local_test, 3, 5, True)
+        self.start(local_test, 3, 10, True)
 
 
-    def test_w_auto_simple(self):
+    def test_w_auto_work_simple(self):
         # build test array  version (v2 l1 r1)
         local_test = [
             # alles fertig außer rahmen und hinterer schwader
@@ -403,9 +432,48 @@ class Tests(SimpleSWTestCase):
             ["RECEIVE", "OUT_FRAME_UP", 0],
 
             ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 1],
+            ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 1],
             ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 0],
+            # ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 0],
             ["RECEIVE", "OUT_SPINNER_REAR_UP", 1],
             ["RECEIVE", "OUT_SPINNER_REAR_UP", 0],
+
+
+
+            ["RECEIVE", "LED_AUTO_WORK", 0],
+        ]
+
+
+        print("\nSTART TEST auto work simple")
+        print(str(local_test))
+        self.start(local_test, 2, 5, ignore_pressure=True)
+
+    def test_w_auto_work_2(self):
+        # build test array  version (v2 l1 r1)
+        local_test = [
+            # alles fertig außer rahmen und hinterer schwader
+            ["SEND", "SENS_SPINNER_RIGHT_UP", 1],
+            ["SEND", "SENS_SPINNER_LEFT_UP", 1],
+            ["SEND", "SENS_WEEL_TELE_RIGHT_OUT", 1],
+            ["SEND", "SENS_WEEL_TELE_LEFT_OUT", 1],
+            ["SEND", "SENS_FRAME_UP", 0],
+
+            ["SEND", "IN_AUTO_WORK", 1],
+            ["WAIT", "", 5.1],
+            ["RECEIVE", "LED_AUTO_WORK", 1],
+
+            ["RECEIVE", "OUT_FRAME_UP", 1],
+            ["SEND", "SENS_FRAME_UP", 1],
+            ["RECEIVE", "OUT_FRAME_UP", 0],
+
+            ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 1],
+            ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 1],
+            ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 0],
+            # ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 0],
+            ["RECEIVE", "OUT_SPINNER_REAR_UP", 1],
+            ["RECEIVE", "OUT_SPINNER_REAR_UP", 0],
+
+
 
             ["RECEIVE", "LED_AUTO_WORK", 0],
         ]
@@ -415,6 +483,123 @@ class Tests(SimpleSWTestCase):
         print(str(local_test))
         self.start(local_test, 15, 5, ignore_pressure=True)
 
+    def test_v_auto_low_simple_1(self):
+        local_test = [
+            # rahmen ist unterhalb von tiefstellung
+            ["SEND", "SENS_FRAME_GROUND", 1],
+            ["SEND", "SENS_FRAME_LOW", 1],
+            ["SEND", "SENS_FRAME_MIDDLE", 1],
+            ["SEND", "SENS_FRAME_UP", 0],
+
+            ["SEND", "IN_AUTO_LOW", 1],
+            ["WAIT", "", 5.1],
+            ["RECEIVE", "LED_AUTO_LOW", 1],
+
+            ["RECEIVE", "OUT_FRAME_UP", 1],
+            ["SEND", "SENS_FRAME_LOW", 0],
+            ["RECEIVE", "OUT_FRAME_UP", 0],
+
+            ["RECEIVE", "LED_AUTO_LOW", 0],
+        ]
+
+
+        print("\nSTART TEST auto low simple 1")
+        print(str(local_test))
+        self.start(local_test, 0, 2, ignore_pressure=True)
+
+    def test_v_auto_low_simple_2(self):
+        local_test = self.framelock_init + [
+            # rahmen ist oberhalb von tiefstellung
+            ["SEND", "SENS_FRAME_GROUND", 1],
+            ["SEND", "SENS_FRAME_LOW", 0],
+            ["SEND", "SENS_FRAME_MIDDLE", 1],
+            ["SEND", "SENS_FRAME_UP", 0],
+
+            ["SEND", "IN_AUTO_LOW", 1],
+            ["WAIT", "", 5.1],
+            ["RECEIVE", "LED_AUTO_LOW", 1],
+
+        ] + self.open_framelock + [
+
+            ["RECEIVE", "OUT_FRAME_DOWN", 1],
+            ["SEND", "SENS_FRAME_LOW", 1],
+            ["RECEIVE", "OUT_FRAME_DOWN", 0],
+
+        ] + self.close_framelock + [
+
+            ["RECEIVE", "LED_AUTO_LOW", 0],
+
+
+        ]
+
+
+        print("\nSTART TEST auto low simple 2")
+        print(str(local_test))
+        self.start(local_test, 0, 2, ignore_pressure=True)
+
+    def test_u_auto_third_left(self):
+        local_test = [
+            # spinner is beneath 1/3
+            ["SEND", "SENS_SPINNER_LEFT_THIRD", 0],
+            ["SEND", "SENS_SPINNER_LEFT_UP", 0],
+
+            ["SEND", "IN_SPINNER_LEFT_AUTO_THIRD", 1],
+
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 1],
+            ["SEND", "SENS_SPINNER_LEFT_THIRD", 1],
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 0],
+        ]
+
+
+        print("\nSTART TEST auto third left")
+        print(str(local_test))
+        self.start(local_test, 0, 2, ignore_pressure=True)
+        
+    def test_u_auto_third_right(self):
+        local_test = [
+            # spinner is beneath 1/3
+            ["SEND", "SENS_SPINNER_RIGHT_THIRD", 1],
+            ["SEND", "SENS_SPINNER_RIGHT_UP", 0],
+
+            ["SEND", "IN_SPINNER_RIGHT_AUTO_THIRD", 1],
+
+            ["RECEIVE", "OUT_SPINNER_RIGHT_FLOAT", 1],
+            ["RECEIVE", "LED_SPINNER_RIGHT_FLOAT", 1],
+            ["SEND", "SENS_SPINNER_RIGHT_THIRD", 0],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_FLOAT", 0],
+        ]
+
+
+        print("\nSTART TEST auto third RIGHT")
+        print(str(local_test))
+        self.start(local_test, 0, 2, ignore_pressure=True)
+
+    def test_spinner_rear_float_and_led(self):
+        local_test = [
+            # spinner is beneath 1/3
+            ["SEND", "SENS_SPINNER_REAR_UP", 1],
+
+            ["SEND", "IN_MULTI_DOWN", 1],
+
+            ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 1],
+            ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 1],
+
+            ["SEND", "IN_MULTI_DOWN", 0],
+
+            ["SEND", "IN_MULTI_UP", 1],
+
+            ["RECEIVE", "OUT_SPINNER_REAR_UP", 1],
+            ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 0],
+            ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 0],
+
+            ["SEND", "IN_MULTI_UP", 0],
+            ["RECEIVE", "OUT_SPINNER_REAR_UP", 0],
+        ]
+
+
+        print("\nSTART TEST auto third left")
+        print(str(local_test))
+        self.start(local_test, 0, 2, ignore_pressure=True)
 
     def combine_parallel(self, list1, list2):
         count = 0
@@ -501,7 +686,7 @@ class Tests(SimpleSWTestCase):
                 self.fail("Empty count reached at step: " + str(self.i) + str(current_test))
                 # return False
 
-            elif self.i == len(self.test)-1:
+            elif self.i == len(self.test):
                 return False
 
             else:
