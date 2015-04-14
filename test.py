@@ -200,14 +200,57 @@ class Tests(SimpleSWTestCase):
 
         ["RECEIVE", "OUT_PRESSURE", 0],
 
-
-
-
     ]
 
     def test_frame_down(self):
         print("\nSTART TEST frame_down")
         self.start(self.frame_down, 2, 5)
+
+    manual_frame_down = [
+        ["SEND", "SENS_FRAME_UP", 0],
+        ["SEND", "IN_MOD_OU_FRAME", 1],
+        ["SEND", "IN_MOD_OU_FRAME", 0],
+
+        ["SEND", "IN_MULTI_DOWN", 1],
+
+        # short up
+        ["RECEIVE", "OUT_FRAME_UP", 1],
+        ["RECEIVE", "OUT_PRESSURE", 1],
+        ["RECEIVE", "OUT_FRAME_UP", 0],
+        ["RECEIVE", "OUT_PRESSURE", 0],
+
+
+        # open framelock
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 1],
+        ["RECEIVE", "OUT_PRESSURE", 1],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 1],
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 0],
+
+
+        # frame down
+        ["RECEIVE", "OUT_FRAME_DOWN", 1],
+        ["WAIT", "", 3],
+        ["SEND", "IN_MULTI_DOWN", 0],
+        ["RECEIVE", "OUT_FRAME_DOWN", 0],
+
+        # framelock close
+        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 1],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 0],
+        ["SEND", "SENS_FRAME_LOCK_CLOSED", 1],
+        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 0],
+
+
+
+        ["RECEIVE", "OUT_PRESSURE", 0],
+
+        ["SEND", "IN_MOD_OU_SPINNER_BACK", 1],
+        ["SEND", "IN_MOD_OU_SPINNER_BACK", 0],
+
+    ]
+
+    def test_manual_frame_down(self):
+        print("\nSTART TEST manual frame_down")
+        self.start(self.manual_frame_down, 2, 5)
 
     auto_work_init_v1 = [
         # both weelteles already out
@@ -397,20 +440,20 @@ class Tests(SimpleSWTestCase):
         print(str(local_test))
         self.start(local_test, 3, 10, True)
 
-    def test_x_auto_2(self):
+    # def test_x_auto_2(self):
         # build test array  version (v2 l1 r1)
-        local_test = self.auto_work_init_v2[:]
-        local_test = self.combine_append(local_test, self.auto_work_init_l1)
-        local_test = self.combine_append(local_test, self.auto_work_init_r1)
-        local_test = self.combine_append(local_test, self.auto_work_start)
-        local_test = self.combine_append(local_test, self.auto_work_weel_tele_v234)
-        local_test = self.combine_append(local_test, self.auto_work_weel_tele_right_v24)
-        local_test = self.combine_append(local_test, self.auto_work_up_v234)
-        local_test = self.combine_append(local_test, self.auto_work_end)
+    #     local_test = self.auto_work_init_v2[:]
+    #     local_test = self.combine_append(local_test, self.auto_work_init_l1)
+     #    local_test = self.combine_append(local_test, self.auto_work_init_r1)
+    #     local_test = self.combine_append(local_test, self.auto_work_start)
+    #     local_test = self.combine_append(local_test, self.auto_work_weel_tele_v234)
+    #     local_test = self.combine_append(local_test, self.auto_work_weel_tele_right_v24)
+    #     local_test = self.combine_append(local_test, self.auto_work_up_v234)
+    #     local_test = self.combine_append(local_test, self.auto_work_end)
 
-        print("\nSTART TEST auto work 2")
-        print(str(local_test))
-        self.start(local_test, 3, 10, True)
+    #     print("\nSTART TEST auto work 2")
+    #     print(str(local_test))
+    #     self.start(local_test, 3, 10, True)
 
 
     def test_w_auto_work_simple(self):
@@ -577,6 +620,8 @@ class Tests(SimpleSWTestCase):
     def test_spinner_rear_float_and_led(self):
         local_test = [
             # spinner is beneath 1/3
+            ["SEND", "IN_MOD_OU_SPINNER_BACK", 1],
+            ["SEND", "IN_MOD_OU_SPINNER_BACK", 0],
             ["SEND", "SENS_SPINNER_REAR_UP", 1],
 
             ["SEND", "IN_MULTI_DOWN", 1],
