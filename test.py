@@ -57,24 +57,32 @@ class Tests(SimpleSWTestCase):
         ["SEND", "SENS_FRAME_LOCK_OPEN", 0],
     ]
     open_framelock = [
-        ["RECEIVE", "OUT_FRAME_UP", 1],
+        ["RECEIVE", "OUT_FRAME_UP", 1, 1401],
 
-        ["RECEIVE", "OUT_FRAME_UP", 0],
+        ["RECEIVE", "OUT_FRAME_UP", 0, 1402],
 
-        ["RECEIVE", "OUT_FRAME_LOCK_UP", 1],
-        ["SEND", "SENS_FRAME_LOCK_CLOSED", 0],
-        ["RECEIVE", "LED_FRAME_LOCK", 1],
-        ["SEND", "SENS_FRAME_LOCK_OPEN", 1],
-        ["RECEIVE", "OUT_FRAME_LOCK_UP", 0],
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 1, 1403],
+        ["SEND", "SENS_FRAME_LOCK_CLOSED", 0, 1404],
+        ["RECEIVE", "LED_FRAME_LOCK", 1, 1405],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 1, 1406],
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 0, 1407],
+    ]
+    open_framelock_without_up = [
+
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 1, 1503],
+        ["SEND", "SENS_FRAME_LOCK_CLOSED", 0, 1504],
+        ["RECEIVE", "LED_FRAME_LOCK", 1, 1505],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 1, 1506],
+        ["RECEIVE", "OUT_FRAME_LOCK_UP", 0, 1507],
     ]
     close_framelock = [
 
-        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 1],
-        ["SEND", "SENS_FRAME_LOCK_OPEN", 0],
-        ["SEND", "SENS_FRAME_LOCK_CLOSED", 1],
+        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 1, 1601],
+        ["SEND", "SENS_FRAME_LOCK_OPEN", 0, 1602],
+        ["SEND", "SENS_FRAME_LOCK_CLOSED", 1, 1603],
 
-        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 0],
-        ["RECEIVE", "LED_FRAME_LOCK", 0],
+        ["RECEIVE", "OUT_FRAME_LOCK_DOWN", 0, 1604],
+        ["RECEIVE", "LED_FRAME_LOCK", 0, 1605],
     ]
 
 
@@ -646,6 +654,89 @@ class Tests(SimpleSWTestCase):
         print(str(local_test))
         self.start(local_test, 0, 2, ignore_pressure=True)
 
+    init_spinner_third = [
+         # spinner is beneath 1/3
+        ["SEND", "SENS_SPINNER_LEFT_THIRD", 0],
+        ["SEND", "SENS_SPINNER_LEFT_UP", 0],
+
+        # spinner is beneath 1/3
+        ["SEND", "SENS_SPINNER_RIGHT_THIRD", 0],
+        ["SEND", "SENS_SPINNER_RIGHT_UP", 0],
+    ]
+    init_frame_up = [
+         # frame is in work position
+        ["SEND", "SENS_FRAME_UP", 1],
+        ["SEND", "SENS_FRAME_MIDDLE", 0],
+        ["SEND", "SENS_FRAME_LOW", 0],
+        ["SEND", "SENS_FRAME_GROUND", 0],
+    ]
+
+
+
+    def test_n_auto_transport_1(self):
+        local_test = self.init_spinner_third + \
+                     self.framelock_init + \
+                     self.init_frame_up + [
+
+            #START AUTO TRANSPORT FUNCTION
+            ["SEND", "IN_AUTO_TRANSPORT", 1, 1301],
+            ["WAIT", "", 6, 1302],
+            ["RECEIVE", "LED_AUTO_TRANSPORT", 1, 1303],
+
+            #REAR spinner float
+            ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 1, 1304],
+            ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 1, 1305],
+
+            #Spinner to "third" position
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 1, 1306],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_UP", 1, 1307],
+            ["SEND", "SENS_SPINNER_LEFT_THIRD", 1, 1308],
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 0, 1309],
+            ["SEND", "SENS_SPINNER_RIGHT_THIRD", 1, 1310],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_UP", 0, 1311],
+
+            # spinnerteles in
+            ["RECEIVE", "OUT_SPINNER_LEFT_TELE_IN", 1, 1312],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_TELE_IN", 1, 1313],
+            ["SEND", "SENS_SPINNER_LEFT_TELE_IN", 1, 1314],
+            ["RECEIVE", "OUT_SPINNER_LEFT_TELE_IN", 0, 1315],
+            ["SEND", "SENS_SPINNER_RIGHT_TELE_IN", 1, 1316],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_TELE_IN", 0, 1317],
+
+            # frame down to ground
+            ] + self.open_framelock_without_up + [
+
+            ["RECEIVE", "OUT_FRAME_DOWN", 1, 1318],
+            ["SEND", "SENS_FRAME_MIDDLE", 1, 1319],
+            ["SEND", "SENS_FRAME_LOW", 1, 1320],
+            ["SEND", "SENS_FRAME_GROUND", 1, 1321],
+            ["RECEIVE", "OUT_FRAME_DOWN", 0, 1322],
+
+            ] + self.close_framelock + [
+
+            # weelteles in
+            ["RECEIVE", "OUT_WEEL_TELE_LEFT_IN", 1, 1323],
+            ["RECEIVE", "OUT_WEEL_TELE_RIGHT_IN", 1, 1324],
+            ["SEND", "SENS_WEEL_TELE_LEFT_IN", 1, 1325],
+            ["RECEIVE", "OUT_WEEL_TELE_LEFT_IN", 0, 1326],
+            ["SEND", "SENS_WEEL_TELE_RIGHT_IN", 1, 1327],
+            ["RECEIVE", "OUT_WEEL_TELE_RIGHT_IN", 0, 1328],
+
+            # frame up to "middle"
+            ["RECEIVE", "OUT_FRAME_UP", 1, 1329],
+            ["SEND", "SENS_FRAME_MIDDLE", 0, 1330],
+            ["RECEIVE", "OUT_FRAME_UP", 0, 1331],
+
+            ["RECEIVE", "LED_AUTO_TRANSPORT", 0, 1332],
+            #release auto transport button
+            ["SEND", "IN_AUTO_TRANSPORT", 0, 1333],
+        ]
+
+
+        print("\nSTART TEST auto transport 1")
+        print(str(local_test))
+        self.start(local_test, 0, 2, ignore_pressure=True)
+
     def combine_parallel(self, list1, list2):
         count = 0
         new_list = []
@@ -707,11 +798,17 @@ class Tests(SimpleSWTestCase):
                     self.i += 1
                     self.error_count = 0
                     self.empty_count = 0
-                    print("STEP:"+str(self.i)+" GOT CORRECT <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2]))
+                    out_text = "STEP:"+str(self.i)+" GOT CORRECT <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2])
+                    if len(current_test) == 4:
+                        out_text += " STEP ID: "+str(current_test[3])
+                    print(out_text)
 
                 else:
-                    print("STEP:"+str(self.i)+" WAITING FOR <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2]) +
-                    " BUT GOT : <Output> "+config.get_output_name(output_id)+" id: " + str(output_id) + " value: " + str(value))
+                    out_text = "STEP:"+str(self.i)+" WAITING FOR <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2]) + \
+                    " BUT GOT : <Output> "+config.get_output_name(output_id)+" id: " + str(output_id) + " value: " + str(value)
+                    if len(current_test) == 4:
+                        out_text += " STEP ID: "+str(current_test[3])
+                    print(out_text)
 
                     self.error_count += 1
                     self.empty_count = 0
