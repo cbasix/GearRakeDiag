@@ -65,6 +65,7 @@ class Tests(SimpleSWTestCase):
         ["SEND", "SENS_FRAME_LOCK_CLOSED", 0, 1404],
         ["RECEIVE", "LED_FRAME_LOCK", 1, 1405],
         ["SEND", "SENS_FRAME_LOCK_OPEN", 1, 1406],
+
         ["RECEIVE", "OUT_FRAME_LOCK_UP", 0, 1407],
     ]
     open_framelock_without_up = [
@@ -328,13 +329,14 @@ class Tests(SimpleSWTestCase):
 
     auto_work_up_v234 = [
         ["RECEIVE", "OUT_FRAME_UP", 1],
-        ["SEND", "SENS_FRAME_UP", 0],
+        ["SEND", "SENS_FRAME_UP", 1],
         ["RECEIVE", "OUT_FRAME_UP", 0],
 
         ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 1],
         ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 1],
         ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 0],
         ["RECEIVE", "OUT_SPINNER_REAR_UP", 1],
+        ["SEND", "SENS_SPINNER_REAR_UP", 1],
         ["RECEIVE", "OUT_SPINNER_REAR_UP", 0],
     ]
     
@@ -435,7 +437,7 @@ class Tests(SimpleSWTestCase):
         ["RECEIVE", "LED_AUTO_WORK", 0],
     ]
 
-    def test_x_auto_1(self):
+    def test_x_auto_work_1(self):
         # build test array  version (all done)
         local_test = self.auto_work_init_v1[:]
         local_test = self.combine_append(local_test, self.auto_work_init_l1)
@@ -466,6 +468,7 @@ class Tests(SimpleSWTestCase):
 
     def test_w_auto_work_simple(self):
         # build test array  version (v2 l1 r1)
+        # sometimes problems with short timeouts !!!
         local_test = [
             # alles fertig außer rahmen und hinterer schwader
             ["SEND", "SENS_SPINNER_RIGHT_UP", 1],
@@ -487,6 +490,7 @@ class Tests(SimpleSWTestCase):
             ["RECEIVE", "OUT_SPINNER_REAR_FLOAT", 0],
             # ["RECEIVE", "LED_SPINNER_REAR_FLOAT", 0],
             ["RECEIVE", "OUT_SPINNER_REAR_UP", 1],
+            ["SEND", "SENS_SPINNER_REAR_UP", 1],
             ["RECEIVE", "OUT_SPINNER_REAR_UP", 0],
 
 
@@ -530,7 +534,7 @@ class Tests(SimpleSWTestCase):
         ]
 
 
-        print("\nSTART TEST auto work simple")
+        print("\nSTART TEST auto work 2")
         print(str(local_test))
         self.start(local_test, 15, 5, ignore_pressure=True)
 
@@ -775,14 +779,14 @@ class Tests(SimpleSWTestCase):
         if self.continueListen:
             current_test = self.test[self.i]
             if current_test[0] == "SEND":
-                print("NEXT MUST BE <Input> "+current_test[1]+" id: " + str(config.get_input_id(current_test[1])) + " value: " + str(current_test[2]))
+                print(str(time.time())+": NEXT MUST BE <Input> "+current_test[1]+" id: " + str(config.get_input_id(current_test[1])) + " value: " + str(current_test[2]))
                 self.connector.simulate_manual_input(config.get_input_id(current_test[1]), current_test[2])
                 self.i += 1
                 self.error_count = 0
                 self.empty_count = 0
 
             if current_test[0] == "SENDMSG":
-                print("NEXT MUST BE <MESSAGE> "+current_test[1]+" id: " + str(config.get_message_id(current_test[1])) + " value: " + str(current_test[2]))
+                print(str(time.time())+": NEXT MUST BE <MESSAGE> "+current_test[1]+" id: " + str(config.get_message_id(current_test[1])) + " value: " + str(current_test[2]))
                 self.connector.simulate_message(config.get_message_id(current_test[1]), current_test[2])
                 self.i += 1
                 self.error_count = 0
@@ -793,18 +797,18 @@ class Tests(SimpleSWTestCase):
                 if output_id is None:
                     time.sleep(1)
                     self.empty_count += 1
-                    print("STEP:"+str(self.i)+" GOT NONE WHILE LOOP")
+                    print(str(time.time())+": STEP:"+str(self.i)+" GOT NONE WHILE LOOP")
                 elif output_id == config.get_output_id(current_test[1]) and value == current_test[2]:
                     self.i += 1
                     self.error_count = 0
                     self.empty_count = 0
-                    out_text = "STEP:"+str(self.i)+" GOT CORRECT <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2])
+                    out_text = str(time.time())+": STEP:"+str(self.i)+" GOT CORRECT <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2])
                     if len(current_test) == 4:
                         out_text += " STEP ID: "+str(current_test[3])
                     print(out_text)
 
                 else:
-                    out_text = "STEP:"+str(self.i)+" WAITING FOR <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2]) + \
+                    out_text = str(time.time())+": STEP:"+str(self.i)+" WAITING FOR <Output> "+current_test[1]+" id: " + str(config.get_output_id(current_test[1])) + " value: " + str(current_test[2]) + \
                     " BUT GOT : <Output> "+config.get_output_name(output_id)+" id: " + str(output_id) + " value: " + str(value)
                     if len(current_test) == 4:
                         out_text += " STEP ID: "+str(current_test[3])
@@ -840,19 +844,19 @@ class Tests(SimpleSWTestCase):
         name = config.get_output_name(output_id)
         if name == "OUT_PRESSURE" and self.ignore_pressure:
             return
-        print("<Output> "+name+" id: " + str(output_id) + " value: " + str(value))
+        print(str(time.time())+": <Output> "+name+" id: " + str(output_id) + " value: " + str(value))
         if not self.process(output_id, value):
             self.continueListen = False
 
     def on_log(self, input_type, input_id, value, additional_info):
         type_name = config.get_type_name(input_type)
 
-        print(" <Event> type: "+type_name+"(" + str(input_type) + ") id: " + str(input_id) + " value: " + str(
+        print(str(time.time())+": <Event> type: "+type_name+"(" + str(input_type) + ") id: " + str(input_id) + " value: " + str(
             value) + " additional_info: " + str(additional_info))
 
     def on_input(self, input_id, value):
         name = config.get_input_name(input_id)
-        print("<Input> "+name+" id: " + str(input_id) + " value: " + str(value))
+        print(str(time.time())+": <Input> "+name+" id: " + str(input_id) + " value: " + str(value))
 
 if __name__ == '__main__':
     unittest.main()
