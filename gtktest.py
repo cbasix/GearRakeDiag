@@ -65,9 +65,9 @@ class FlowBoxWindow(Gtk.Window):
         self.conn.request_output_listener_active(True)
 
         self.conn.request_all_input_values()
-
-        # self.conn.request_simulate_input_mode(True)
-        # self.conn.request_simulate_output_mode(True)
+        self.conn.request_simulate_manual_input_mode(True)
+        self.conn.request_simulate_sensor_input_mode(True)
+        self.conn.request_simulate_output_mode(True)
 
         self.conn.request_all_output_values()
         self.conn.request_all_input_values()

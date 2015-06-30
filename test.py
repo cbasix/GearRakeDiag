@@ -16,7 +16,8 @@ class SimpleSWTestCase(unittest.TestCase):
         if connector is None:
             connector = Connector()
             time.sleep(5)
-            connector.request_simulate_input_mode(True)
+            connector.request_simulate_manual_input_mode(True)
+            connector.request_simulate_sensor_input_mode(True)
             connector.request_simulate_output_mode(True)
             time.sleep(3)
             connector.request_log_active(True)
@@ -25,7 +26,8 @@ class SimpleSWTestCase(unittest.TestCase):
 
         self.connector = connector  # Connector()
 
-        self.connector.request_simulate_input_mode(True)
+        self.connector.request_simulate_manual_input_mode(True)
+        self.connector.request_simulate_sensor_input_mode(True)
         self.connector.request_simulate_output_mode(True)
 
         time.sleep(0.5)
@@ -699,6 +701,12 @@ class Tests(SimpleSWTestCase):
             ["SEND", "SENS_SPINNER_RIGHT_THIRD", 1, 1310],
             ["RECEIVE", "OUT_SPINNER_RIGHT_UP", 0, 1311],
 
+             #short up to prevent the teles from getting stuck because of to less power in hydraulic
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 1, 1311],
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 0, 1311],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_UP", 1, 1311],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_UP", 0, 1312],
+
             # spinnerteles in
             ["RECEIVE", "OUT_SPINNER_LEFT_TELE_IN", 1, 1312],
             ["RECEIVE", "OUT_SPINNER_RIGHT_TELE_IN", 1, 1313],
@@ -706,6 +714,14 @@ class Tests(SimpleSWTestCase):
             ["RECEIVE", "OUT_SPINNER_LEFT_TELE_IN", 0, 1315],
             ["SEND", "SENS_SPINNER_RIGHT_TELE_IN", 1, 1316],
             ["RECEIVE", "OUT_SPINNER_RIGHT_TELE_IN", 0, 1317],
+
+            #Spinner to UP
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 1, 1350],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_UP", 1, 1351],
+            ["SEND", "SENS_SPINNER_LEFT_UP", 1, 1352],
+            ["RECEIVE", "OUT_SPINNER_LEFT_UP", 0, 1353],
+            ["SEND", "SENS_SPINNER_RIGHT_UP", 1, 1354],
+            ["RECEIVE", "OUT_SPINNER_RIGHT_UP", 0, 1355],
 
             # frame down to ground
             ] + self.open_framelock_without_up + [
@@ -739,7 +755,7 @@ class Tests(SimpleSWTestCase):
 
         print("\nSTART TEST auto transport 1")
         print(str(local_test))
-        self.start(local_test, 0, 2, ignore_pressure=True)
+        self.start(local_test, 0, 6, ignore_pressure=True)
 
     def combine_parallel(self, list1, list2):
         count = 0
