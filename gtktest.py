@@ -1,5 +1,6 @@
 __author__ = 'cyberxix'
-
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango, GObject
 from config import config, get_input_name, get_output_name, get_type_name
 from connect import Connector
@@ -43,13 +44,13 @@ class FlowBoxWindow(Gtk.Window):
 
         self.create_txt_log()
 
-        self.conn = Connector("/dev/ttyACM{i}", 9600)
-        self.conn.register_input_observer(self)
-        self.conn.register_log_observer(self)
-        self.conn.register_output_observer(self)
-
-        integer_id = GObject.timeout_add( 200, self.read)
-        GObject.timeout_add(10000, self.activate)
+        # self.conn = Connector("/dev/ttyACM{i}", 9600)
+        # self.conn.register_input_observer(self)
+        # self.conn.register_log_observer(self)
+        # self.conn.register_output_observer(self)
+        #
+        # integer_id = GObject.timeout_add( 200, self.read)
+        # GObject.timeout_add(10000, self.activate)
 
         #self.set_geometry_hints(self.scroll_txt_log,-1,-1)
         self.show_all()

@@ -59,15 +59,16 @@ class Connector:
                     print("Verbindung erfolgreich auf Port: " + port.replace("{i}", str(i)) + "\n")
                     break
                 except:
-                    print("Keine Verbindung auf Port: " + port.replace("{i}", str(i)) + "\n")
+                    pass # print("Keine Verbindung auf Port: " + port.replace("{i}", str(i)) + "\n")
         else:
             self.ser = serial.Serial(
                 port=port,
                 baudrate=baudrate,
             )
 
-        if self.ser == None:
+        if self.ser is None:
             print("No connected device found")
+            exit(4)
 
         if not self.ser.isOpen():
             self.ser.open()

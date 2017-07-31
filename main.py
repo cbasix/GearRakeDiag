@@ -1,6 +1,6 @@
 __author__ = 'cyberxix'
-from tkinter import *
-import ttk
+# from tkinter import *
+# import ttk
 from connect import Connector
 import configparser
 from config import config
