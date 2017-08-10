@@ -4,6 +4,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango, GObject
 from config import config, get_input_name, get_output_name, get_type_name
 from connect import Connector
+from main_glade import drawFront, drawTop, drawSide
+import random
 
 class FlowBoxWindow(Gtk.Window):
 
@@ -11,19 +13,59 @@ class FlowBoxWindow(Gtk.Window):
         Gtk.Window.__init__(self, title="SwDiag")
         self.set_border_width(10)
         self.set_default_size(600, 800)
+        self.leds = [random.random() > 0.5 for i in config["input"]]
 
-        self.grd_main = Gtk.Grid()
+        #self.grd_main = Gtk.Grid()
         #print(dir(self.grd_main))#.set_weight(1)
-        self.add(self.grd_main)
+        #self.add(self.grd_main)
 
         notebook = Gtk.Notebook()
-        self.grd_main.attach(notebook, 0, 0, 18, 2)
+        self.add(notebook)
+        # self.grd_main.attach(notebook, 0, 0, 18, 2)
 
         #header = Gtk.HeaderBar(title="Flow Box")
         #header.set_subtitle("Sample FlowBox app")
         #header.props.show_close_button = True
 
         #self.set_titlebar(header)
+
+        # graphical views
+        scroll_sensors = Gtk.ScrolledWindow()
+        scroll_sensors.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll_sensors.set_hexpand(True)
+        scroll_sensors.set_vexpand(True)
+
+        self.flow_sensors = Gtk.FlowBox()
+        self.flow_sensors.set_valign(Gtk.Align.START)
+        self.flow_sensors.set_max_children_per_line(2)
+        self.flow_sensors.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        # draw front
+        self.drawing_area = Gtk.DrawingArea()
+        self.drawing_area.set_size_request(350, 350)
+        self.drawing_area.connect('draw', drawTop, self.leds)
+        # button.connect("toggled", self.on_button_toggled, input_["id"])
+        self.flow_sensors.add(self.drawing_area)
+
+        #draw front
+        self.drawing_area2 = Gtk.DrawingArea()
+        self.drawing_area2.set_size_request(350, 350)
+        self.drawing_area2.connect('draw', drawFront, self.leds)
+        # button.connect("toggled", self.on_button_toggled, input_["id"])
+        self.flow_sensors.add(self.drawing_area2)
+
+        #draw side
+        self.drawing_area3 = Gtk.DrawingArea()
+        self.drawing_area3.set_size_request(350, 350)
+        self.drawing_area3.connect('draw', drawSide, self.leds)
+        # button.connect("toggled", self.on_button_toggled, input_["id"])
+        self.flow_sensors.add(self.drawing_area3)
+
+
+        scroll_sensors.add(self.flow_sensors)
+
+        lbl_sim_input = Gtk.Label("Sensoren")
+        notebook.append_page(scroll_sensors, lbl_sim_input)
 
         #Simulate input
         scroll_sim_input = Gtk.ScrolledWindow()
@@ -43,6 +85,8 @@ class FlowBoxWindow(Gtk.Window):
         notebook.append_page(scroll_sim_input, lbl_sim_input)
 
         self.create_txt_log()
+        lbl_log = Gtk.Label("Log")
+        notebook.append_page(self.scroll_txt_log, lbl_log)
 
         # self.conn = Connector("/dev/ttyACM{i}", 9600)
         # self.conn.register_input_observer(self)
@@ -82,7 +126,7 @@ class FlowBoxWindow(Gtk.Window):
 
         #self.scroll_txt_log.set_size_request(-1, 50)
         #self.grid.attach(scroll_txt_log, 0, 1, 3, 1)
-        self.grd_main.attach(self.scroll_txt_log, 0, 19, 25, 2)
+        #parent.attach(self.scroll_txt_log, 0, 19, 25, 2)
 
         self.txt_log = Gtk.TextView()
         self.txt_log.set_editable(False)
@@ -100,6 +144,7 @@ class FlowBoxWindow(Gtk.Window):
         self.tag_input = self.txt_log_buf.create_tag("input", foreground="green")
         self.tag_output = self.txt_log_buf.create_tag("output", foreground="blue")
         self.tag_error = self.txt_log_buf.create_tag("error", background="yellow")
+
 
     def txt_log_add(self, text, tag=None):
         begin_iter = self.txt_log_buf.get_start_iter()
@@ -135,6 +180,7 @@ class FlowBoxWindow(Gtk.Window):
         #     Label(self.in_out, text="OUT id: " + str(output_id) + " value: " + str(value)).grid(row=output_id, column=0)
 
     def on_input(self, input_id, value):
+        self.leds[input_id] = value
         try:
             name = get_input_name(input_id)
         except Exception:
