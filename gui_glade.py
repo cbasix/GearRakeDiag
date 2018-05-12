@@ -368,7 +368,8 @@ def OnDraw(w, cr):
     #defaults
     cr.set_line_width(0.005)
     cr.select_font_face("Georgia", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-    cr.set_font_size(0.013)
+    #cr.set_font_size(0.013)
+    cr.set_font_size(0.018)
 
     # draw grid
     # for x in range(0, 100, 5):
