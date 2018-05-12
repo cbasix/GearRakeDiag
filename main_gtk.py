@@ -4,7 +4,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango, GObject
 from config import config, get_input_name, get_output_name, get_type_name
 from connect import Connector
-from main_glade import drawFront, drawTop, drawSide
+from gui_glade import drawFront, drawTop, drawSide, drawInput
 import random
 
 class FlowBoxWindow(Gtk.Window):
@@ -13,7 +13,7 @@ class FlowBoxWindow(Gtk.Window):
         Gtk.Window.__init__(self, title="SwDiag")
         self.set_border_width(10)
         self.set_default_size(600, 800)
-        self.leds = [random.random() > 0.5 for i in config["input"]]
+        self.inputs = [None for i in config["input"]]
 
         #self.grd_main = Gtk.Grid()
         #print(dir(self.grd_main))#.set_weight(1)
@@ -40,26 +40,33 @@ class FlowBoxWindow(Gtk.Window):
         self.flow_sensors.set_max_children_per_line(2)
         self.flow_sensors.set_selection_mode(Gtk.SelectionMode.NONE)
 
-        # draw front
+        # draw top
         self.drawing_area = Gtk.DrawingArea()
         self.drawing_area.set_size_request(350, 350)
-        self.drawing_area.connect('draw', drawTop, self.leds)
+        self.drawing_area.connect('draw', drawTop, self.inputs)
         # button.connect("toggled", self.on_button_toggled, input_["id"])
         self.flow_sensors.add(self.drawing_area)
 
         #draw front
         self.drawing_area2 = Gtk.DrawingArea()
         self.drawing_area2.set_size_request(350, 350)
-        self.drawing_area2.connect('draw', drawFront, self.leds)
+        self.drawing_area2.connect('draw', drawFront, self.inputs)
         # button.connect("toggled", self.on_button_toggled, input_["id"])
         self.flow_sensors.add(self.drawing_area2)
 
         #draw side
         self.drawing_area3 = Gtk.DrawingArea()
         self.drawing_area3.set_size_request(350, 350)
-        self.drawing_area3.connect('draw', drawSide, self.leds)
+        self.drawing_area3.connect('draw', drawSide, self.inputs)
         # button.connect("toggled", self.on_button_toggled, input_["id"])
         self.flow_sensors.add(self.drawing_area3)
+
+        # draw input
+        self.drawing_area4 = Gtk.DrawingArea()
+        self.drawing_area4.set_size_request(350, 350)
+        self.drawing_area4.connect('draw', drawInput, self.inputs)
+        # button.connect("toggled", self.on_button_toggled, input_["id"])
+        self.flow_sensors.add(self.drawing_area4)
 
 
         scroll_sensors.add(self.flow_sensors)
@@ -81,20 +88,23 @@ class FlowBoxWindow(Gtk.Window):
         self.create_flow_sim_input(self.flow_sim_input)
         scroll_sim_input.add(self.flow_sim_input)
 
-        lbl_sim_input = Gtk.Label("Eingabesimulation")
-        notebook.append_page(scroll_sim_input, lbl_sim_input)
+        #lbl_sim_input = Gtk.Label("Eingabesimulation")
+        #notebook.append_page(scroll_sim_input, lbl_sim_input)
 
         self.create_txt_log()
         lbl_log = Gtk.Label("Log")
         notebook.append_page(self.scroll_txt_log, lbl_log)
 
-        # self.conn = Connector("/dev/ttyACM{i}", 9600)
-        # self.conn.register_input_observer(self)
-        # self.conn.register_log_observer(self)
-        # self.conn.register_output_observer(self)
-        #
-        # integer_id = GObject.timeout_add( 200, self.read)
-        # GObject.timeout_add(10000, self.activate)
+        try:
+            self.conn = Connector("/dev/ttyACM{i}", 9600)
+            self.conn.register_input_observer(self)
+            self.conn.register_log_observer(self)
+            self.conn.register_output_observer(self)
+
+            integer_id = GObject.timeout_add(200, self.read)
+            GObject.timeout_add(10000, self.activate)
+        except Exception as e:
+            print(e)
 
         #self.set_geometry_hints(self.scroll_txt_log,-1,-1)
         self.show_all()
@@ -110,9 +120,9 @@ class FlowBoxWindow(Gtk.Window):
         self.conn.request_output_listener_active(True)
 
         self.conn.request_all_input_values()
-        self.conn.request_simulate_manual_input_mode(True)
-        self.conn.request_simulate_sensor_input_mode(True)
-        self.conn.request_simulate_output_mode(True)
+        self.conn.request_simulate_manual_input_mode(False)
+        self.conn.request_simulate_sensor_input_mode(False)
+        self.conn.request_simulate_output_mode(False)
 
         self.conn.request_all_output_values()
         self.conn.request_all_input_values()
@@ -153,19 +163,20 @@ class FlowBoxWindow(Gtk.Window):
         self.txt_log_buf.apply_tag(tag, begin_iter, end_iter)
 
 
-
-    def create_flow_sim_input(self, flowbox):
+    def create_flow_sim_input(self, flowbox, manual=True):
         for input_ in config["input"]:
-            button = Gtk.ToggleButton(input_["name"])
-            button.connect("toggled", self.on_button_toggled, input_["id"])
+            if manual and input_["name"].startswith("IN_") or not manual and input_["name"].startswith("SENS_"):
+                button = Gtk.ToggleButton(input_["description"])
+                button.connect("toggled", self.on_button_toggled, input_["id"])
 
-            flowbox.add(button)
+                flowbox.add(button)
 
     def on_button_toggled(self, button, input_id):
         if button.get_active():
             state = 1
         else:
             state = 0
+        # manual and sensor inputs are using the same id set so it doesnt matter which simulate method is called
         self.conn.simulate_manual_input(input_id, state)
         print("Input (", input_id, ") was turned", state, "\n")
 
@@ -180,7 +191,8 @@ class FlowBoxWindow(Gtk.Window):
         #     Label(self.in_out, text="OUT id: " + str(output_id) + " value: " + str(value)).grid(row=output_id, column=0)
 
     def on_input(self, input_id, value):
-        self.leds[input_id] = value
+        self.inputs[input_id] = value
+        self.flow_sensors.queue_draw()
         try:
             name = get_input_name(input_id)
         except Exception:

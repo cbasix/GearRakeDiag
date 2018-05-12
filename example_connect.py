@@ -5,7 +5,7 @@ import struct
 
 if __name__ == "__main__":
     # configure the serial connections (the parameters differs on the device you are connecting to)
-    i = 0;
+    i = 0
     done = False
     while(done == False and i < 15):
         try:

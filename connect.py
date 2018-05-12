@@ -67,13 +67,13 @@ class Connector:
             )
 
         if self.ser is None:
-            print("No connected device found")
-            exit(4)
+            raise IOError("No connected device found")
+
 
         if not self.ser.isOpen():
             self.ser.open()
 
-        self.ser.setTimeout(300)
+       # self.ser.setTimeout(300)
 
     def flush(self):
         self.ser.flush()
