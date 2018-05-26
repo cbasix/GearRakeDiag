@@ -1,0 +1,6 @@
+Pillow==3.1.2
+Pygments==2.1
+pygobject==3.20.0
+pyinter==0.1.8
+pyserial==3.2.1
+six==1.10.0

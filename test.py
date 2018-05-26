@@ -1,5 +1,5 @@
 from copy import deepcopy
-from Cython.Compiler.MemoryView import empty_slice
+#from Cython.Compiler.MemoryView import empty_slice
 from connect import Connector
 import time
 
