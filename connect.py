@@ -1,6 +1,7 @@
 import time
 import serial
 import struct
+import config
 
 DIAG_ERROR = 1
 
@@ -10,7 +11,7 @@ DIAG_GET_ALL_SETTINGS = 12
 
 DIAG_SIMULATE_MANUAL_INPUT = 21
 DIAG_SIMULATE_MSG = 22
-DIAG_SIMULATE_SENSOR_INPUT = 23
+DIAG_SIMULATE_SENSOR_INPUT = 21
 
 DIAG_GET_ALL_ERRORS = 32
 DIAG_CLEAR_ALL_ERRORS = 34
@@ -125,9 +126,11 @@ class Connector:
         self.send_frame(DIAG_GET_ALL_ERRORS, 0, 0, 0, 0)
 
     def simulate_sensor_input(self, input_id, value):
+        print("simulating sensor input {} {}".format(config.get_input_name(input_id), value))
         self.send_frame(DIAG_SIMULATE_SENSOR_INPUT, TYPE_SENSOR, input_id, value, 0)
 
     def simulate_manual_input(self, input_id, value):
+        print("simulating manual input {} {}".format(config.get_input_name(input_id), value))
         self.send_frame(DIAG_SIMULATE_MANUAL_INPUT, TYPE_MANUAL, input_id, value, 0)
 
     def simulate_message(self, input_id, value):
